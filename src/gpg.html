@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="jtriley2p" />
+  <title>GNU Privacy Guard</title>
+  <link rel="stylesheet" href="reset.css" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+<table class="header">
+  <tr>
+    <td colspan="2" rowspan="2" class="width-auto">
+      <h1 class="title">GNU Privacy Guard</h1>
+      <span class="subtitle">A minimalist introduction</span>
+    </td>
+    <th>Version</th>
+    <td class="width-min">v1.0.0</td>
+  </tr>
+  <tr>
+    <th>Updated</th>
+    <td class="width-min"><time style="white-space: pre;">2025-03-04</time></td>
+  </tr>
+  <tr>
+    <th class="width-min">Author</th>
+    <td class="width-auto"><a href=""><cite>jtriley2p</cite></a></td>
+    <th class="width-min">License</th>
+    <td>AGPL-3</td>
+  </tr>
+</table>
+<nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Contents</h2>
+<ul class="incremental">
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#key-generation" id="toc-key-generation">Key
+Generation</a></li>
+<li><a href="#key-management" id="toc-key-management">Key
+Management</a></li>
+<li><a href="#signing" id="toc-signing">Signing</a></li>
+<li><a href="#encryption" id="toc-encryption">Encryption</a>
+<ul class="incremental">
+<li><a href="#asymmetric" id="toc-asymmetric">Asymmetric</a></li>
+<li><a href="#asymmetric-with-signature"
+id="toc-asymmetric-with-signature">Asymmetric with Signature</a></li>
+<li><a href="#symmetric-with-signature"
+id="toc-symmetric-with-signature">Symmetric with Signature</a></li>
+</ul></li>
+<li><a href="#summary" id="toc-summary">Summary</a></li>
+</ul>
+</nav>
+<h2 id="introduction">Introduction</h2>
+<p>GNU Privacy Guard aka GPG is a privacy preserving tool used by devops
+engineers, darknet market vendors, and human rights activists. In this
+article we’ll create an elliptic curve keypair then sign, encrypt and
+decrypt data with it. No clients, no GUI’s, all you need is a shell
+(bash, zsh) terminal.</p>
+<h2 id="key-generation">Key Generation</h2>
+<p>First we need to create a public-private key pair. GPG defaults to
+RSA, so we’ll need to use “expert” mode to access the elliptic curve
+cryptography options.</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--full-gen-key</span> <span class="at">--expert</span></span></code></pre></div>
+<p>This starts an interactive session. Follow each step carefully, when
+prompted, you’ll need to jiggle the mouse during key generation to
+improve entropy. Be ready for this, elliptic curve keys are generated
+quickly. You’ll also be prompted for a password. It goes without saying
+but make it strong.</p>
+<p>The session should look a bit like the following snippet. I chose “9”
+(ECC and ECC) for signing and encrypting, then the “9” (secp256k1) curve
+like good little paranoid civilians, “2y” in case quantum supremacy
+breaks our caveman abelian group asymmetric cryptography by 2026,
+confirm this is all correct with “y”, then enter some information. I’m
+omitting the email address for now, but use this field if you intend to
+use this with an email client. Finally “O” (okay) to confirm all
+choices.</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>Please select what kind of key you want:</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>   (1) RSA and RSA (default)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>   (2) DSA and Elgamal</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>   (3) DSA (sign only)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>   (4) RSA (sign only)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>   (7) DSA (set your own capabilities)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>   (8) RSA (set your own capabilities)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>   (9) ECC and ECC</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  (10) ECC (sign only)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  (11) ECC (set your own capabilities)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  (13) Existing key</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  (14) Existing key from card</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>Your selection? 9</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>Please select which elliptic curve you want:</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>   (1) Curve 25519</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>   (3) NIST P-256</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>   (4) NIST P-384</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>   (5) NIST P-521</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>   (6) Brainpool P-256</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>   (7) Brainpool P-384</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>   (8) Brainpool P-512</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>   (9) secp256k1</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>Your selection? 9</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>Please specify how long the key should be valid.</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>         0 = key does not expire</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>      &lt;n&gt;  = key expires in n days</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>      &lt;n&gt;w = key expires in n weeks</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>      &lt;n&gt;m = key expires in n months</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>      &lt;n&gt;y = key expires in n years</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>Key is valid for? (0) 2y</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>Key expires at Thu Sep  3 [REDACTED] 2026 UTC</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>Is this correct? (y/N) y</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>GnuPG needs to construct a user ID to identify your key.</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>Real name: jtriley-eth</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>Email address: </span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>Comment: </span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>You selected this USER-ID:</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    &quot;jtriley-eth&quot;</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>Change (N)ame, (C)omment, (E)mail or (O)kay/(Q)uit? O</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>We need to generate a lot of random bytes. It is a good idea to perform</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>some other action (type on the keyboard, move the mouse, utilize the</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>disks) during the prime generation; this gives the random number</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>generator a better chance to gain enough entropy.</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>gpg: key 0xF8842DEEB412DD47 marked as ultimately trusted</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>gpg: revocation certificate stored as &#39;/home/user/.gnupg/openpgp-revocs.d/2D1AAD0BB87A52DDFAF66734F8842DEEB412DD47.rev&#39;</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>public and secret key created and signed.</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>pub   secp256k1/0xF8842DEEB412DD47 2024-09-03 [SC] [expires: 2026-09-03]</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>      2D1AAD0BB87A52DDFAF66734F8842DEEB412DD47</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>uid                              jtriley-eth</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>sub   secp256k1/0x6BC6F860744B0301 2024-09-03 [E] [expires: 2026-09-03]</span></code></pre></div>
+<p>Great, so the final few lines show some identifying information about
+the key. No need to save this information manually, as we can retrieve
+it by listing the keys below.</p>
+<h2 id="key-management">Key Management</h2>
+<p>We can list all public keys known to our machine’s GPG as follows.
+This will include all public keys imported or generated, even those to
+which we have no private keys.</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>gpg --list-keys</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>pub   secp256k1/0xF8842DEEB412DD47 2024-09-03 [SC] [expires: 2026-09-03]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      2D1AAD0BB87A52DDFAF66734F8842DEEB412DD47</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>uid                   [ultimate] jtriley-eth</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>sub   secp256k1/0x6BC6F860744B0301 2024-09-03 [E] [expires: 2026-09-03]</span></code></pre></div>
+<p>This format is subject to change so if versions diverge from the time
+of writing to the time of reading, this is okay.</p>
+<p>Now to export our public key, we should export it with the “armor”
+option, which converts it to readable ASCII text.</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;jtriley-eth&#39; with your own username</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--export</span> <span class="at">--armor</span> jtriley-eth</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>-----BEGIN PGP PUBLIC KEY BLOCK-----</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>mE8EZtdM8RMFK4EEAAoCAwTlArBoQUU1v7NvP4ND5l+b+M+Odhq+TikaK/SResQz</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>DHLPYwXC3DGz2rB5oPPZCK0U8VPwtyw5owbthjh/HlcqtAtqdHJpbGV5LWV0aIiW</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>BBMTCgA+FiEELRqtC7h6Ut369mc0+IQt7rQS3UcFAmbXTPECGwMFCQPCZwAFCwkI</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>BwMFFQoJCAsFFgIDAQACHgECF4AACgkQ+IQt7rQS3Uc/SwEAzfyyc63u+bmgb1oj</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>R5RODot6NnntITdmQ2cpG1CETCABALdVK9j1uuNY2rm4axriU3/FZG1qndBWH6Ni</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>AaSrk1xfuFMEZtdM8RIFK4EEAAoCAwQ8E7pAmvYeN41gYNYm9A7iWxvu1R1Xv/Mm</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>vSH24B/fEkBwyXyfBa1HvgeMq/LHliS0BwkHsYZat/fdc74tii8rAwEIB4h+BBgT</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>CgAmFiEELRqtC7h6Ut369mc0+IQt7rQS3UcFAmbXTPECGwwFCQPCZwAACgkQ+IQt</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>7rQS3UdxTgD/UzQPEZMZCUAmfPROYb7scPNMrUwtUQi273d7l2yDBYYBAJ7vp0kn</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>2LtD0YnuvBL9ejFHpzQxudHrTJ1238+bShx7</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>=XYFB</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>-----END PGP PUBLIC KEY BLOCK-----</span></code></pre></div>
+<p>This is a plaintext format that can be shared. As an exercise, import
+the key printed above in the next step.</p>
+<p>Start by store the ascii text in a file; for the example we’ll call
+this <code>jtriley.txt</code>, though the naming scheme is
+arbitrary.</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--import</span> jtriley.txt</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>gpg: key 0x6BC6F860744B0301: public key &quot;jtriley-eth&quot; imported</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>gpg: Total number processed: 1</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>gpg:               imported: 1</span></code></pre></div>
+<p>This key should now show up when using
+<code>gpg --list-keys</code>.</p>
+<h2 id="signing">Signing</h2>
+<p>Next we’ll generate a cleartext signature for sharing. Start by
+creating a <code>message.txt</code> file.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>i&#39;m sorry that your warrantless surveillance regime was built on the</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>assumption that people would always need intermediaries to transact</span></code></pre></div>
+<p>Then we generate a cleartext signature as follows. This will prompt
+for the password entered during key generation.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;jtriley-eth&#39; with your username</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;message.txt&#39; with your file path</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--clear-sign</span> <span class="at">--local-user</span> jtriley-eth message.txt</span></code></pre></div>
+<p>This creates a file with the same filename as input with a
+<code>.asc</code> suffix by default. We can “cat” this to the
+terminal:</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>-----BEGIN PGP SIGNED MESSAGE-----</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>Hash: SHA256</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>i&#39;m sorry that your warrantless surveillance regime was built on the</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>assumption that people would always need intermediaries to transact</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>-----BEGIN PGP SIGNATURE-----</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>iNUEARMIAH0WIQQtGq0LuHpS3fr2ZzT4hC3utBLdRwUCZtdcBF8UgAAAAAAuAChp</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>c3N1ZXItZnByQG5vdGF0aW9ucy5vcGVucGdwLmZpZnRoaG9yc2VtYW4ubmV0MkQx</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>QUFEMEJCODdBNTJEREZBRjY2NzM0Rjg4NDJERUVCNDEyREQ0NwAKCRD4hC3utBLd</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>R0qVAP4nUB3bjxHeWqHb+S6wSbgde9p91hIyLQMvRhLquP2CRAD/UGf9iUVabVGY</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>e945XfIZjo/YeEmjYvrpoxEK/qGu5vA=</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>=phkG</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>-----END PGP SIGNATURE-----</span></code></pre></div>
+<h2 id="encryption">Encryption</h2>
+<p>To encrypt our data, we have a few options. The most basic example is
+encrypting a message with the recipients public key, this is useful for
+smaller messages but can be cumbersome for larger messages.</p>
+<h3 id="asymmetric">Asymmetric</h3>
+<p>To encrypt a message with a foreign public key we’ll use the
+following. I’m using my own public key for this example so we can also
+demonstrate decryption.</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;jtriley-eth&#39; with the intended recipient&#39;s public key</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;message.txt&#39; with your file path</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--recipient</span> jtriley-eth <span class="at">--encrypt</span> message.txt</span></code></pre></div>
+<p>By default this creates a file with the same filename as the input
+with a <code>.gpg</code> suffix. This we won’t cat to the terminal since
+it’s in an unreadable format, but here’s how to decrypt the message,
+provided you have the corresponding private key.</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;message.txt.gpg&#39; with your file path</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--decrypt</span> message.txt.gpg</span></code></pre></div>
+<p>By default this prints to the standard output, but can be stored in a
+file by using <code>--output &lt;outfilename&gt;</code>.</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>gpg: encrypted with 256-bit ECDH key, ID 0x6BC6F860744B0301, created 2024-09-03</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>      &quot;jtriley-eth&quot;</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>i&#39;m sorry that your warrantless surveillance regime was built on the</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>assumption that people would always need intermediaries to transact</span></code></pre></div>
+<h3 id="asymmetric-with-signature">Asymmetric with Signature</h3>
+<p>We can also sign the message during encryption where the signature is
+verified during decryption.</p>
+<blockquote>
+<p>Note: Since the commands are getting long, lines that end in
+<code>\</code> tell the shell not to treat the newline character as a
+terminal character of the command but rather the command continues on
+the next line.</p>
+</blockquote>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;jtriley-eth&#39; with the signing username</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;recv-user&#39; with the recipient username</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;message.txt&#39; with your file path</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--local-user</span> jtriley-eth <span class="dt">\</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--recipient</span> recv-user <span class="dt">\</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sign</span> <span class="dt">\</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--encrypt</span> message.txt</span></code></pre></div>
+<p>The output is omitted for brevity but should be comparable to the
+previous section.</p>
+<h3 id="symmetric-with-signature">Symmetric with Signature</h3>
+<p>We can also send a message encrypted with a symmetric cipher and a
+passphrase.</p>
+<p>Note that by default GPG will cache the password, so it may not
+prompt for it.</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;jtriley-eth&#39; with the signing username</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;recv-user&#39; with the recipient username</span></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;twofish&#39; with your preferred cipher algo</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># replace &#39;message.txt&#39; with your file path</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="ex">gpg</span> <span class="at">--local-user</span> jtriley-eth <span class="dt">\</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--recipient</span> recv-user <span class="dt">\</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--sign</span> <span class="dt">\</span></span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">--symmetric</span> <span class="dt">\</span></span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">--cipher-algo</span> twofish <span class="dt">\</span></span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">--encrypt</span> message.txt</span></code></pre></div>
+<p>There’s a lot more going on here, so to summarize, we sign with
+<code>jtriley-eth</code>, the recipient is <code>recv-user</code>, we
+use symmetric cryptography, in particular <code>twofish</code>, though
+others are available, and we’re encrypting <code>message.txt</code>.</p>
+<p>The default symmetric cipher algorithm is AES-128, though there are a
+variety of options to choose from (see <code>gpg --help</code>).</p>
+<h2 id="summary">Summary</h2>
+<p>All of this information comes from the man page of GPG, it is far too
+long to read start to finish but is a great resource when the arcane
+corners of the internet aren’t helpful and the warnings should be read
+very carefully.</p>
+<p>Until next time.</p>
+</body>
+</html>

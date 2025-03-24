@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="jtriley2p" />
+  <title>Noir’s Circuit backend</title>
+  <link rel="stylesheet" href="reset.css" />
+  <link rel="stylesheet" href="index.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<table class="header">
+  <tr>
+    <td colspan="2" rowspan="2" class="width-auto">
+      <h1 class="title">Noir’s Circuit backend</h1>
+      <span class="subtitle">A practical introduction</span>
+    </td>
+    <th>Version</th>
+    <td class="width-min">v1.0.0</td>
+  </tr>
+  <tr>
+    <th>Updated</th>
+    <td class="width-min"><time style="white-space: pre;">2025-03-05</time></td>
+  </tr>
+  <tr>
+    <th class="width-min">Author</th>
+    <td class="width-auto"><a href=""><cite>jtriley2p</cite></a></td>
+    <th class="width-min">License</th>
+    <td>AGPL-3</td>
+  </tr>
+</table>
+<nav id="TOC" role="doc-toc">
+<h2 id="toc-title">Contents</h2>
+<ul class="incremental">
+<li><a href="#introduction" id="toc-introduction">Introduction</a></li>
+<li><a href="#the-noir-compiler" id="toc-the-noir-compiler">The Noir
+Compiler</a>
+<ul class="incremental">
+<li><a href="#arithmetic-circuits"
+id="toc-arithmetic-circuits">Arithmetic Circuits</a></li>
+</ul></li>
+<li><a href="#a-brief-history-of-plonk"
+id="toc-a-brief-history-of-plonk">A Brief History of PLONK</a></li>
+<li><a href="#constraint-systems" id="toc-constraint-systems">Constraint
+Systems</a></li>
+<li><a href="#rank-1-constraint-system"
+id="toc-rank-1-constraint-system">Rank 1 Constraint System</a></li>
+<li><a href="#example" id="toc-example">Example</a></li>
+<li><a href="#plonkish-constraint-system"
+id="toc-plonkish-constraint-system">PLONKish Constraint System</a>
+<ul class="incremental">
+<li><a href="#example-1" id="toc-example-1">Example</a></li>
+</ul></li>
+<li><a href="#noir-output" id="toc-noir-output">Noir Output</a></li>
+<li><a href="#conclusion" id="toc-conclusion">Conclusion</a></li>
+</ul>
+</nav>
+<h2 id="introduction">Introduction</h2>
+<p>The Noir programming language allows a familiar, Rust-like interface
+for writing custom zk-SNARK programs.</p>
+<p>The flexibility of zk-SNARK’s enables quasi-turing complete programs
+to be proven once and verified with sub-linear time complexity and no
+interactions between the prover and verifier. Developing these programs,
+also known as circuits, are often challenging, as the program must be
+reducible to a series of arithmetic constraints. From this problem, two
+different strategies have emerged, one uses a zk-SNARK domain specific
+language (DSL) and relies on a compiler to transform the program to
+constraints which can be proven and verified, while the other uses a
+zk-SNARK virtual machine (zkVM) circuit that can process instructions
+then prove and verify its execution trace.</p>
+<p>Historically, DSL’s for zk-SNARK’s have been difficult due to their
+unconventional syntax and programming paradigm, though the circuits
+generated could be proven much faster than zkVM’s. The zkVM model has
+most successfully relied on machine architectures such as RISC-V due to
+its reduced instruction set, open specification, and support as a target
+for LLVM (and languages that use LLVM). While it has historically been
+much slower to prove zkVM’s, proving performance has improved
+substantially up to the time of writing.</p>
+<p>Noir is a recent addition to the former strategy, it compiles source
+code into an intermediate representation that can be transformed into
+the appropriate zk-SNARK backend as necessary. At the time of writing,
+Noir targets UltraHonk for circuits and MegaHonk for private smart
+contracts on the Aztec network.</p>
+<h2 id="the-noir-compiler">The Noir Compiler</h2>
+<p>Noir does not directly prove circuits, nor does it fully synthesize
+the constraint system on its own. Rather, Noir can be used for two
+purposes, either generating an arithmetic circuit or smart contract
+bytecode for the Aztec Virtual Machine (AVM). For the scope of this
+article, we will focus on the former, which is used for zk-SNARK’s that
+can be proven offchain and verified either offchain or onchain by an
+auto-generated Solidity verifier deployable to the Ethereum Virtual
+Machine (EVM).</p>
+<h3 id="arithmetic-circuits">Arithmetic Circuits</h3>
+<p>The output of the Noir compilier is not the circuit itself, rather it
+is bytecode. This bytecode is interpreted by the Arithmetic Circuit
+Virtual Machine (ACVM), which generates the circuit in its final
+constraint system. This is significant as a compilation target, as this
+allows the Noir output to target arbitrary constraint systems. The
+bytecode interpreted by the ACVM can be divided into two categories,
+Arithmetic Circuit Intermediate Representation (ACIR) bytecode and
+Brillig bytecode. The ACIR opcodes correspond to constraints in the
+final circuit while the Brillig opcodes correspond to unconstrained
+computation. ACIR opcodes can call into Brillig functions, but not vice
+versa.</p>
+<p>Some computations are expensive to perform in constrained SNARK’s,
+though checking correctness may be much less expensive. Thus we can
+define SNARK-unfriendly computations in Brillig functions, call those
+functions from ACIR, and constrain the Brillig function outputs for
+correctness afterward.</p>
+<p>For example, division in a circuit is performed over field elements,
+requiring an expensive algorithm (typically the Extended Euclidean
+Algorithm) to find multiplicative inverses. Instead of finding inverses
+inside the circuit, we can delegate the search to a Brillig function.
+The Brillig function should return the multiplicative inverse, but note
+that being an unconstrained environment means a malicious prover could
+return incorrect values. As such, we constrain the output of the
+function as follows.</p>
+<pre class="noir"><code>fn div(x: Field, y: Field) -&gt; Field {
+    let inv_y = unsafe { inverse(y) };
+
+    assert_eq(1, y * inv_y);
+
+    x * inv_y
+}
+
+unconstrained inverse(x: Field) -&gt; Field {
+    // extended euclidean algorithm
+
+    // -- snip
+}</code></pre>
+<p>Using the multiplicative inverse law of
+<code>n * inverse(n) == 1</code> for every number <code>n</code> in a
+field, we can constrain the output of the Brillig <code>inverse</code>
+function is correct with a multiplication equality check, which is quite
+cheap for arithmetic circuits.</p>
+<h2 id="a-brief-history-of-plonk">A Brief History of PLONK</h2>
+<p>Permutations over Lagrange-bases for Oecumenical Noninteractive
+arguments of Knowledge, also known as PLONK, was the first of the
+PLONKish zk-SNARK’s. PLONK was an iteration on Groth16, both in
+commitment scheme and constraint system. In particular, the constraint
+system was expanded to enshrine more complex algebraic logic.</p>
+<p>TurboPLONK extended PLONK by adding arbitrary custom gates, that is
+to say the constraint system could be extended from PLONK to accommodate
+custom logic; in particular, TurboPLONK added constraints for elliptic
+curve point arithmetic. However, TurboPLONK has been since been
+superseded by UltraPLONK.</p>
+<p>UltraPLONK extended TurboPLONK by adding lookup tables, formally
+known as Plookup. This allows lookup tables to replace more expensive
+SNARK-unfriendly constraints in an efficiently provable &amp; verifiable
+way. Over time, UltraPLONK has developed to encapsulate custom gates and
+lookup tables.</p>
+<p>HONK by Aztec and similarly HyperPLONK by EspressoSystems,
+significantly improve the efficiency of PLONKish proof generation by
+changing the way the constraint systems are interpolated into
+polynomials. For application developers this is not directly practical,
+though its name will be referenced quite often in the wild, so an
+explanation was fitting.</p>
+<p>Noir targets UltraHONK for its circuit backend, that is to say it
+targets a PLONKish constraint system with custom gates, lookup tables,
+and it uses a multivariate polynomial commitment scheme that is provable
+on linear time complexity.</p>
+<h2 id="constraint-systems">Constraint Systems</h2>
+<p>The core of constraint systems is to construct input vector(s), also
+known as the witness, and circuit matrices which transform the witness
+such that we can check correctness. Commitment schemes typically involve
+transforming these matrices into vectors of polynomials such that all of
+the same rules of arithmetic still hold, and the polynomials can be
+checked at a single evaluation point rather than every element of a
+matrix. Polynomial interpolation is beyond the scope of this document,
+but we will start with the Groth16 constraint system as a foundation for
+the PLONK constraint system.</p>
+<h2 id="rank-1-constraint-system">Rank 1 Constraint System</h2>
+<p>A Rank 1 Constraint System, also known as R1CS, is the constraint
+system of Groth16, a notable predecessor to PLONK. R1CS requires a
+circuit to be a series of <code>n</code> equality constraints
+<code>a * b = c</code>.</p>
+<pre>
+
+a<sub>0</sub> · b<sub>0</sub> = c<sub>0</sub>
+a<sub>1</sub> · b<sub>1</sub> = c<sub>1</sub>
+    ...
+a<sub>n</sub> · b<sub>n</sub> = c<sub>n</sub>
+
+</pre>
+<p>Given this <span class="math inline">\(a_1\)</span> series of
+constraints, we derive a collection of inputs ‘i’, outputs ‘o’,
+intermediate values ‘m’, and a constant value 1, known as the witness
+vector ‘w’.</p>
+<blockquote>
+<p>Note: The constant term 1 can be used when multiplying by constants
+in the circuit, it is not always necessary and it is not always 1, but
+is included nonetheless.</p>
+</blockquote>
+<pre>
+
+→
+w = [ 1 i<sub>0</sub> ... o<sub>0</sub> ... m<sub>0</sub> ... ]
+
+</pre>
+<p>Additionally, we transform the series of constraints into ‘A’, ‘B’,
+and ‘C’ matrices with of ’m*n’ dimensions corresponding to the number of
+constraints and the witness vector length, respectively.</p>
+<pre>
+
+→
+w = [ 1 i<sub>0</sub> ... o<sub>0</sub> ... m<sub>0</sub> ... ]
+
+     ┌                 ┐
+     │ a<sub>01</sub>  a<sub>02</sub>  ...  a<sub>0n</sub> │
+A =  │ a<sub>11</sub>  a<sub>12</sub>  ...  a<sub>1n</sub> │
+     │ ... ... ... ... │
+     │ a<sub>m1</sub>  a<sub>m2</sub>  ...  a<sub>mn</sub> │
+     └                 ┘
+
+     ┌                 ┐
+     │ b<sub>01</sub>  b<sub>02</sub>  ...  b<sub>0n</sub> │
+B =  │ b<sub>11</sub>  b<sub>12</sub>  ...  b<sub>1n</sub> │
+     │ ... ... ... ... │
+     │ b<sub>m1</sub>  b<sub>m2</sub>  ...  b<sub>mn</sub> │
+     └                 ┘
+
+     ┌                 ┐
+     │ c<sub>01</sub>  c<sub>02</sub>  ...  c<sub>0n</sub> │
+C =  │ c<sub>11</sub>  c<sub>12</sub>  ...  c<sub>1n</sub> │
+     │ ... ... ... ... │
+     │ c<sub>m1</sub>  c<sub>m2</sub>  ...  c<sub>mn</sub> │
+     └                 ┘
+
+</pre>
+<p>Finally, a linear transformation of the witness vector by each matrix
+allows for the constraint system to be fully representable with vector
+equality checks.</p>
+<pre>
+
+ →    →    →
+Aw ◦ Bw = Cw
+
+</pre>
+<p>While the Groth16 SNARK requires additional transformations from a
+R1CS to become a fully fledged SNARK, namely transforming the vectors to
+polynomials for the polynomial commitment scheme, this is beyond the
+scope of this document, as the focus is on the practical targets to be
+aware of as developers.</p>
+<h2 id="example">Example</h2>
+<p>For a concrete example, we transform the following program into an
+R1CS.</p>
+<pre>
+
+z = x<sup>2</sup> * y
+
+</pre>
+<pre class="noir"><code>fn main(
+    x: pub Field,
+    y: pub Field
+) -&gt; pub Field {
+    let z = Field::pow_32(x, 2) * y;
+
+    z
+}</code></pre>
+<blockquote>
+<p>Note: the <code>**</code> operator is not valid Noir syntax, so we
+use the <code>pow_32</code> built-in function in the <code>Field</code>
+namespace.</p>
+</blockquote>
+<p>First we break the expression down into simple multiplication
+equality checks.</p>
+<pre class="noir"><code>fn mul_only_main(
+    x: pub Field,
+    y: pub Field
+) -&gt; pub Field {
+    let x_sq = x * x;
+
+    let z = x_sq * y;
+
+    z
+}</code></pre>
+<p>Next we derive our witness vector, which must contain all inputs,
+outputs, intermediate values, and 1.</p>
+<pre>
+
+→
+w = [ 1 x y x<sub>sq</sub> z ]
+
+</pre>
+<p>Then we derive our ‘A’, ‘B’, and ‘C’ matrices. Treating the above
+function <code>mul_only_main</code> as a series of ’a*b=c’ constraints,
+we have the following.</p>
+<pre>
+
+x  · x = x<sub>sq</sub>
+x<sub>sq</sub> · y = z
+
+</pre>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;">a</th>
+<th style="text-align: center;">b</th>
+<th style="text-align: center;">c</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">x</td>
+<td style="text-align: center;">x</td>
+<td style="text-align: center;">x<sub>sq</sub></td>
+</tr>
+<tr>
+<td style="text-align: center;">x<sub>sq</sub></td>
+<td style="text-align: center;">y</td>
+<td style="text-align: center;">z</td>
+</tr>
+</tbody>
+</table>
+<p>We define ‘A’ as follows such that the result of matrix vector
+multiplication of ‘A’ and ‘w’ corresponds to the ‘a’ column:</p>
+<pre>
+
+      ┌           ┐
+ →    │ 0 1 0 0 0 │
+Aw =  │ 0 0 0 1 0 │ · [1 x y x<sub>sq</sub> z]
+      └           ┘
+     ┌    ┐
+ →   │ x  │
+Aw = │ x<sub>sq</sub> │
+     └    ┘
+
+</pre>
+<p>Respectively we define ‘B’ and ‘C’:</p>
+<pre>
+
+      ┌           ┐
+ →    │ 0 1 0 0 0 │
+Bw =  │ 0 0 1 0 0 │ · [1 x y x<sub>sq</sub> z]
+      └           ┘
+
+     ┌   ┐
+ →   │ x │
+Bw = │ y │
+     └   ┘
+
+      ┌           ┐
+ →    │ 0 0 0 1 0 │
+Cw =  │ 0 0 0 0 1 │ · [1 x y x<sub>sq</sub> z]
+      └           ┘
+
+     ┌    ┐
+ →   │ x<sub>sq</sub> │
+Cw = │ z  │
+     └    ┘
+
+</pre>
+<p>Finally, we may constrain that:</p>
+<pre>
+
+ →    →    →
+Aw ◦ Bw = Cw
+
+</pre>
+<p>A useful way to reason about the ‘A’, ‘B’, and ‘C’ matrices is to
+consider them selectors that define which witness vector elements are
+constrained on a given row.</p>
+<h2 id="plonkish-constraint-system">PLONKish Constraint System</h2>
+<p>The PLONKish constraint system also requires a circuit to be a series
+of constraints, though there are more elements in each constraint.</p>
+<blockquote>
+<p>Note: We call it PLONKish due to the variants of PLONK using the same
+base constraint system but with various extensions.</p>
+</blockquote>
+<pre>
+
+q<sub>L</sub>·a + q<sub>R</sub>·b + q<sub>O</sub>·c + q<sub>M</sub>·ab + q<sub>C</sub> = 0
+
+</pre>
+<p>We consider the ‘q’ values selector vectors and ‘a’, ‘b’, and ‘c’
+values as assignment vectors. By using different combinations of
+selectors, we can constrain several different properties without
+modifying the constraint system.</p>
+<p>Multiplication (a * b = c):</p>
+<pre>
+
+q<sub>L</sub> =  0
+q<sub>R</sub> =  0
+q<sub>O</sub> = -1
+q<sub>M</sub> =  1
+q<sub>C</sub> =  0
+
+0 = (0·a) + (0·b) + (-1·c) + (1·a·b) + 0
+  ↓
+0 = -c + a·b
+  ↓
+c = a·b
+
+</pre>
+<p>Addition (a + b = c):</p>
+<pre>
+
+q<sub>L</sub> =  1
+q<sub>R</sub> =  1
+q<sub>O</sub> = -1
+q<sub>M</sub> =  1
+q<sub>C</sub> =  0
+
+0 = (1·a) + (1·b) + (-1·c) + (0·a·b) + 0
+  ↓
+0 = a + b - c
+  ↓
+c = a + b
+
+</pre>
+<p>Booleanity (a = 0 || a = 1):</p>
+<pre>
+
+q<sub>L</sub> = -1
+q<sub>R</sub> =  0
+q<sub>O</sub> =  0
+q<sub>M</sub> =  1
+q<sub>C</sub> =  0
+
+0 = (-1·a) + (0·b) + (-1·c) + (1·a·a) + 0
+  ↓
+0 = -a + a<sup>2</sup>
+  ↓
+a = a<sup>2</sup> ⟹ a=0 ∨ a=1
+
+</pre>
+<p>Constant (a = 5):</p>
+<pre>
+
+q<sub>L</sub> = -1
+q<sub>R</sub> =  0
+q<sub>O</sub> =  0
+q<sub>M</sub> =  0
+q<sub>C</sub> =  5
+
+0 = (-1·a) + (0·b) + (0·c) + (0·a·b) + 5
+  ↓
+0 = -a + 5
+  ↓
+5 = a
+
+</pre>
+<p>Once again, we define assignment vectors ‘a’, ‘b’, and ‘c’ and
+selector vectors ‘qL’, ‘qR’, ‘qO’, ‘qM’, and ‘qC’ such that the
+following holds.</p>
+<pre>
+
+   →      →      →      →         →
+q<sub>L</sub>·a + q<sub>R</sub>·b + q<sub>O</sub>·c + q<sub>M</sub>·ab + q<sub>C</sub> = 0
+
+</pre>
+<h3 id="example-1">Example</h3>
+<p>For a concrete example, we transform the following program into a
+PLONK constraint system.</p>
+<pre>
+
+z = x<sup>2</sup> * y + 5
+
+</pre>
+<p>First we break the expression down into lines that can be proven by a
+row in PLONK.</p>
+<pre class="noir"><code>fn main(
+    x: pub Field,
+    y: pub Field
+) -&gt; pub Field {
+    let z = Field::pow_32(x, 2) * y + 5;
+
+    z
+}
+
+fn plonk_main(
+    x: pub Field,
+    y: pub Field
+) -&gt; pub Field {
+    let x_sq = x * x;
+
+    let z = x_sq * y + 5;
+
+    z
+}</code></pre>
+<blockquote>
+<p>Note: the <code>**</code> operator is not valid Noir syntax, so we
+use the <code>pow_32</code> built-in function in the <code>Field</code>
+namespace.</p>
+</blockquote>
+<p>Treating the above function <code>plonk_main</code> as a series of
+PLONK constraints, we transform each expression into a PLONKish
+constraint.</p>
+<pre class="noir"><code>let x_sq = x * x;</code></pre>
+<pre>
+
+q<sub>L</sub> =  0
+q<sub>R</sub> =  0
+q<sub>O</sub> = -1
+q<sub>M</sub> =  1
+q<sub>C</sub> =  0
+
+a = x
+b = x
+c = x<sub>sq</sub>
+
+0  = (0·x) + (0·x) + (-1·x<sub>sq</sub> ) + (1·x·x) + 0
+   ↓
+0  = -x<sub>sq</sub> + x·x
+   ↓
+x<sub>sq</sub> = x·x
+
+</pre>
+<pre class="noir"><code>let z = x_sq * y + 5;</code></pre>
+<pre>
+
+q<sub>L</sub> =  0
+q<sub>R</sub> =  0
+q<sub>O</sub> =  1
+q<sub>M</sub> = -1
+q<sub>C</sub> = -5
+
+a = y
+b = x<sub>sq</sub>
+c = z
+
+0 = (0·y) + (0· x<sub>sq</sub> ) + (1·z) + (-1·y· x<sub>sq</sub> ) + (-5)
+  ↓
+0 = z - y·x<sub>sq</sub> - 5
+  ↓
+0 = -z + y·x<sub>sq</sub> + 5
+  ↓
+z = y·x<sub>sq</sub> + 5
+
+</pre>
+<p>Then combining them together into vectors:</p>
+<pre>
+
+   →      →      →      →         →
+q<sub>L</sub>·a + q<sub>R</sub>·b + q<sub>O</sub>·c + q<sub>M</sub>·ab + q<sub>C</sub> = 0
+
+
+q<sub>L</sub> = [ 0  0 ]
+q<sub>R</sub> = [ 0  0 ]
+q<sub>O</sub> = [-1  1 ]
+q<sub>M</sub> = [ 1 -1 ]
+q<sub>C</sub> = [ 0 -5 ]
+
+    ┌    ┐
+→   │ x  │
+a = │ x<sub>sq</sub> │
+    └    ┘
+
+    ┌   ┐
+→   │ x │
+b = │ y │
+    └   ┘
+
+    ┌    ┐
+→   │ x<sub>sq</sub> │
+c = │ z  │
+    └    ┘
+
+0 = [0 0][x x<sub>sq</sub>] + [0 0][x y] + [-1 1][x<sub>sq</sub> z] + [1 -1][x x<sub>sq</sub>][x y] + [0 -5]
+  ↓
+0 = [-x<sub>sq</sub> z] + [x·x -y·x<sub>sq</sub>] + [0 -5]
+  ↓
+0 = [x·x·-x<sub>sq</sub> y·x-z+5]
+  ↓
+0 = [0 0]
+
+</pre>
+<p>However, the right side only reduces to the zero vector if and only
+if all constraints are satisfied.</p>
+<h2 id="noir-output">Noir Output</h2>
+<p>Given the PLONK constraint example, we’ll examine the stages of
+compilation of the following Noir program to ensure it matches what we
+demonstrated in the example section.</p>
+<pre class="noir"><code>fn main(
+    x: pub Field,
+    y: pub Field
+) -&gt; pub Field {
+    let z = Field::pow_32(x, 2) * y + 5;
+
+    z
+}</code></pre>
+<p>We’ll compile the code with the option to print the ACIR.</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="ex">nargo</span> compile <span class="at">--print-acir</span></span></code></pre></div>
+<p>This prints the following.</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode txt"><code class="sourceCode default"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Compiled ACIR for main (unoptimized):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>func 0</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>current witness index : 3</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>private parameters indices : []</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>public parameters indices : [0, 1]</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>return value indices : [2]</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>EXPR [ (1, _0, _0) (-1, _3) 0 ]</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>EXPR [ (-1, _1, _3) (1, _2) -5 ]</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>The main function has ID `0`.</span></code></pre></div>
+<p>The current witness index of <code>3</code> indicates there are four
+values in the witness (this will be transformed into the ‘a’, ‘b’, and
+‘c’ assignment vectors when interpreted by the ACVM).</p>
+<p>There are no private parameters, though there are two public
+parameters whose witness indices are <code>0</code> and <code>1</code>
+repsectively; these correspond to our inputs <code>x</code> and
+<code>y</code>.</p>
+<p>There is one return value index, <code>2</code>, which corresponds to
+<code>z</code>.</p>
+<p>Although we don’t have explicit confirmation of the existence of
+<code>x_sq</code> in the metadata, can infer that the witness vector
+is:</p>
+<pre>
+
+→
+w = [ x y z x<sub>sq</sub> ]
+
+</pre>
+<p>Then we have two <code>EXPR</code> expressions. Examining the ACIR
+opcodes in the ACIR repository, we find only one instance of
+<code>Expression</code> in <code>Opcode::AssertZero(Expression)</code>,
+which appears to be defined in its own module in the repository.</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode rust"><code class="sourceCode rust"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">pub</span> <span class="kw">struct</span> Expression<span class="op">&lt;</span>F<span class="op">&gt;</span> <span class="op">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> mul_terms<span class="op">:</span> <span class="dt">Vec</span><span class="op">&lt;</span>(F<span class="op">,</span> Witness<span class="op">,</span> Witness)<span class="op">&gt;,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> linear_combinations<span class="op">:</span> <span class="dt">Vec</span><span class="op">&lt;</span>(F<span class="op">,</span> Witness)<span class="op">&gt;,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">pub</span> q_c<span class="op">:</span> F<span class="op">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
+<p>The <code>mul_terms</code> field contains a series of triples, each
+containing a selector and two witness values (‘a’ and ‘b’), while the
+<code>linear_combinations</code> field contains a series of tuples, each
+containing a selector and a witness value (‘c’), and finally the
+<code>q_c</code> field contains the constant value (‘qC’).</p>
+<p>Using this information, we can reconstruct the expressions as
+follows.</p>
+<pre class="noir"><code>let witness = [x, y, z, x_sq];
+
+// 0*x + 0*x + 1*x*x - x_sq + 0 = 0
+//
+let expr_0 = Expression {
+    mul_terms: vec![(1, witness[0], witness[0]),],
+    linear_combinations: vec![(-1, witness[3])],
+    q_c: 0
+};
+
+// 0*x + 0*x - 1*y*x_sq + 1*z + 5 = 0
+//
+let expr_1 = Expression {
+    mul_terms: vec![(-1, witness[1], witness[3])],
+    linear_combinations: vec![(1, witness[2])],
+    q_c: -5
+};</code></pre>
+<p>Which corresponds to our PLONK constraints!</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>For the sake of brevity, the custom gates and lookup tables will
+remain handwavy for now. However, the foundations of a PLONKish
+constraint system as a Noir circuit backend should help build intuition
+in both how the compiler behaves as well as how to optimize circuits by
+delegating expensive computational tasks to the Brillig unconstrained
+environment.</p>
+<p>Expect more content similar to this in the future, as there is plenty
+more to cover.</p>
+<p>Until next time.</p>
+</body>
+</html>
