@@ -358,7 +358,7 @@ on the unit circle.
 In the binary phase-shift keying constellation diagram, the bits zero and one
 are at phase offsets zero degrees and 180 degrees. In the quadrature phase-shift
 keying constellation diagram, however, the pairs of bits are at the offsets of
-45, 90, 135, and 180 degrees. Each angle represents a phase in the transmitted
+45, 135, 225 and 315 degrees. Each angle represents a phase in the transmitted
 wave which represents some "keyed" information.
 
 ![Binary and Quadrature Phase-Shift Keying Constellations](assets/constellations.png)
