@@ -1,16 +1,7 @@
-# The Monospace Web
+# [jtriley.com](https://jtriley.com)
 
-Monospace fonts are dear to many of us. Some find them more readable, consistent, and beautiful, than their proportional alternatives. Maybe we’re just brainwashed from spending years in terminals? Or are we hopelessly nostalgic? I’m not sure. But I like them, and that’s why I started experimenting with all-monospace Web.
+a personal website implementation.
 
-https://owickstrom.github.io/the-monospace-web/
+based almost entirely on [the monospace web](https://owickstrom.github.io/the-monospace-web),
+your monospace experimentation is much appreciated <3
 
-## Build
-
-```
-nix develop # or `direnv allow .`
-make
-```
-
-## License
-
-[MIT](LICENSE.md)
