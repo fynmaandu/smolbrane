@@ -18,16 +18,6 @@ frequency, however, unlicensed transmissions are limited to the
 [Family Radio Service, and General Mobile Radio Service](#frs-and-gmrs)
 frequencies.
 
-## National Calling Frequencies
-
-The following are national frequencies to coordinate and find other operators,
-generally the common courtesy is to move to another frequency after establishing
-contact.
-
-fm simplex over 2 meter band: 146.520 MHz
-
-fm simplex over 0.7 meter band: 446.000 MHz
-
 ## NOAA Weather Radio Frequencies
 
 National Oceanic and Atmospheric Administration (NOAA) transmits audio weather
