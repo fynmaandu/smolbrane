@@ -80,7 +80,7 @@ is primarily in our mutual aid. From "Mutual Aid: A Factor of Evolution":
 Our advantage is in our mutual interdependence. Working with and depending on one another. We can't
 fix everything and there's only one game in town, but growing food for and with our communities,
 building and running sovereign infrastructure which minimizes state or corporate dependence, sharing
-our resources and knowledge with one another. These are how we make a difference right not in our
+our resources and knowledge with one another. These are how we make a difference right now in our
 own communities. Despite the technological wonders I've had the privilege of interfacing with in my
 time as a software engineer, there exists no more effective means of activation than distributing
 zines and flyers, there exists no more effective means of organization than book reading and
