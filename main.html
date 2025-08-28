@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>205978619</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p>The basic quantities that we use in classical mechanics are vectors
+with 3 components (corresponding to 3 spatial axes). Now let’s say we
+want to incorporate even time as another dimension in our space (now
+promoted to the notion of "spacetime"), we now have a 4-component
+vector. This establishes a vector space on which we can further define
+structures and do algebra with it. Let’s assume a "dot" product <span
+class="math inline"><em>X</em> ⋅ <em>Y</em> ∈ ℝ</span> which is
+prescribed as : <span class="math display">$$\begin{aligned}
+\begin{bmatrix}
+a_1&amp;a_2&amp;a_3&amp;a_4
+\end{bmatrix}
+\begin{bmatrix}
+-1 &amp; 0   &amp; 0   &amp; 0   \\
+0   &amp; 1 &amp; 0   &amp; 0   \\
+0   &amp; 0   &amp; 1 &amp; 0   \\
+0   &amp; 0   &amp; 0   &amp; 1
+\end{bmatrix}
+\begin{bmatrix}
+b_1 \\ b_2 \\ b_3 \\ b_4
+\end{bmatrix} \in \mathbb{R}
+\end{aligned}$$</span> Then Einstein postulated phenomenologically that
+<em>laws of physics are same for all inertial observers</em>. So in our
+mathematical language, we hope that even our linear algebra remains the
+same. We remember from linear algebra that the dot product value doesn’t
+change depending on the basis we use to represent the vector, applying
+the same logic here we need to ensure that the prescription of our "dot"
+doesn’t change.(<strong>The matrix <span
+class="math inline"><em>d</em><em>i</em><em>a</em><em>g</em>[−1,1,1,1]</span>
+is called the metric and is denoted by <span
+class="math inline"><em>η</em><sub><em>μ</em><sub><em>ν</em></sub></sub></span></strong>)
+This corresponds to a similarity transform where the matrix looks the
+same in both bases: <span class="math display">$$\begin{aligned}
+    \Lambda^{-1} \eta \Lambda = \eta
+\end{aligned}$$</span> Such kinds of transformations are known as
+Lorentz transformations which relates the math of different inertial
+observers.</p>
+<p>Now if we question the prescription of our "dot", the reason is
+Einstein’s second postulate that <em>there exists a finite speed limit,
+and this is that of speed of light.</em> In Calculus we remember we have
+the notion of "dot" coming from Pythagoras theorem : <span
+class="math display">$$\begin{aligned}
+    a\cdot b = a_1b_1 + a_2b_2 + a_3b_3 + a_4b_4
+\end{aligned}$$</span> Lets plot the curve which keeps the magnitude of
+a vector constant i.e <span
+class="math inline"><em>c</em><em>o</em><em>n</em><em>s</em><em>t</em><em>a</em><em>n</em><em>t</em> = <em>a</em><sub>1</sub><sup>2</sup> + <em>a</em><sub>2</sub><sup>2</sup> + …</span>
+we get a spherical shell centred at the origin.(treat <span
+class="math inline"><em>a</em><sub>1</sub></span> as time and rest <span
+class="math inline"><em>a</em><sub><em>i</em></sub></span> as spatial
+components)</p>
+<div class="center">
+<p><img src="1.png" style="width:80.0%" alt="image" /></p>
+</div>
+<p>Changing the frame of the observer implies changing the arrow
+pointing direction on the shell, but the magnitude given by the "dot"
+remains the same, i.e., on the shell. Here we observe that we can
+achieve infinite speed in this theory.</p>
+<p>Now lets do the same thing for our prescription i.e <span
+class="math inline"><em>c</em><em>o</em><em>n</em><em>s</em><em>t</em><em>a</em><em>n</em><em>t</em> =  − <em>a</em><sub>1</sub><sup>2</sup> + <em>a</em><sub>2</sub><sup>2</sup> + …</span>
+What we have is a 2-sheet hyperboloid (drawn slightly different for ease
+of understanding). <span class="math display">$$\begin{aligned}
+    \includegraphics[width=0.8\textwidth]{2.png} % Adjust the file name
+and scale
+\end{aligned}$$</span> Here we observe Einstein’s postulate is being
+satisfied i.e. slope 0 can’t be achieved by changing frames.(Minimum
+slope that can be achieved is = 1, which can be scaled to speed of light
+by changing the units). <strong>A proper diagram is given
+below</strong></p>
+<div class="center">
+<p><img src="4.png" style="width:50.0%" alt="image" /></p>
+</div>
+</body>
+</html>
