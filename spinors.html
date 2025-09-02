@@ -2,15 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
    <!-- MathJax for LaTeX rendering -->
 <script>
-  MathJax = {
-    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-    chtml: {
-      font: 'system-font',   // tells MathJax to use page fonts
-    }
-  };
-</script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      chtml: { adaptiveCSS: true }   // ✅ valid for chtml
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
+ <style>
+    mjx-container, mjx-container * {
+      font-family: monospace !important;
+    }
+  </style>
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
