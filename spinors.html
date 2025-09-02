@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
    <!-- MathJax for LaTeX rendering -->
-<script>
+  <script>
     MathJax = {
-      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
-      chtml: { adaptiveCSS: true }   // ✅ valid for chtml
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
+      svg: {fontCache: 'global'}
     };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
  <style>
-    mjx-container, mjx-container * {
-      font-family: monospace !important;
-    }
+    mjx-container {
+     line-height: normal !important;
+     font-size: 1em !important;
+   }
+   
+   mjx-container * {
+     line-height: normal !important;
+     display: inline-block !important;
+}
+
   </style>
 <head>
   <meta charset="utf-8" />
