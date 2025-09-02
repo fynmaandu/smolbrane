@@ -4,11 +4,9 @@
   <script>
     MathJax = {
       tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
-       macros: {
-        nfrac: ["{{}^{#1}\\!\\!/\\!_#2}", 2]
-      }
+            //macros: {nfrac: ["{^{#1}\\! / \\! _{#2}}", 2]} //The issue is that mathJax { bracket isnt closing properly
       svg: {fontCache: 'global'}
-    };
+      };
   </script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
