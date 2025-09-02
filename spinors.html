@@ -4,6 +4,9 @@
   <script>
     MathJax = {
       tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},
+       macros: {
+        nfrac: ["{{}^{#1}\\!\\!/\\!_#2}", 2]
+      }
       svg: {fontCache: 'global'}
     };
   </script>
@@ -62,7 +65,8 @@ and make use of the stereographic coordinates [z,z̄]. In the complex coordinate
 <p>To understand why one of the representations might be better than the other, let us look at how Lorentz transforms affect these null directions. As we are aware that Lorentz respects the causal relations,
 meaning any Lorentz transformation becomes some transformation (possibly with a new outlook) of the coordinates [z,z̄] or [θ,Φ].  </p>  
 <p> ${}^{(x+iy)}\!\!/\!_{1-z}$ </p>
-<p>$\Theta \stackrel{\hat}{=} 0$</p>  
+<p>$\Theta = 0$</p>  
+<p>\nfrac{a+b}{c}</p>   
 <p>Until next time.</p>
 </body>
 </html>
