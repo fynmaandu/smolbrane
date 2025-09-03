@@ -30,6 +30,7 @@
     <td>AGPL-3</td>
   </tr>
 </table>
+<h1>Poisson brackets and Quantization</h1>  
 <p>
 Let us begin with textbook quantization, and let's get it cleared upfront that there is nothing new about "second quantization"
 - just uplift the Poisson bracket to the commutator (this has many issues, will elaborate later). Well, this naive way didn't cause us any issue
@@ -38,25 +39,43 @@ Let us begin with textbook quantization, and let's get it cleared upfront that t
 , that's where the issues seep in; we are taking derivatives of a distribution. This is the reason we even end up naively seeing δ(x-y) = {Φ,π} --> [Φ,π] = iδ(x-y). <b>Most of this is ill-defined.</b> 
 </p>
 <pre>
-1. First reason is that the Poisson bracket evaluated using functional derivatives would be wrong here, because due to infinite degrees of freedom,
-   the symplectic form is degenerate and even if it weren't, there is still no guarantee that the inverse of the symplectic form exists.
-   So this {Φ,π} = ill defined.
-2. If you are unaware of symplectic structure fine, let's believe [Φ,π] = iδ(x-y). Now when I actually want to write some quantity Φ(x) = ?
-   The standard idea would be to talk about Fourier modes (decomposed into +ve and -ve energy) Φ = ∫(ψaᶧ+ ψ*a) or = ∑ (ψaᶧ+ ψ*a) for periodic condition.
-   Who said these integrals or sums would converge - they wont. <b>It's not a legit operator.</b>
+1. First reason is that the Poisson bracket evaluated using functional 
+   derivatives would be wrong here, because due to infinite degrees of freedom, 
+   the symplectic form is degenerate and even if it weren't, there is still no 
+   guarantee that the inverse of the symplectic form exists. So this {Φ,π} = ill defined.
+2. If you are unaware of symplectic structure fine, let's believe [Φ,π] = iδ(x-y).
+   Now, when I actually want to write some quantity Φ(x) = ?
+   The standard idea would be to talk about Fourier modes (decomposed into +ve and -ve energy)
+   Φ = ∫(ψaᶧ+ ψ*a) or = ∑ (ψaᶧ+ ψ*a) for periodic condition.
+   Who said these integrals or sums would converge - they won't.<b>It's not a legit operator.</b>
 </pre>  
-<p> (Φ,π) could've been smooth functions in special cases and they commute classically, but why would I assume suddenly in Quantum theory I can't multiply them as I want, 
+<p> (Φ,π) could've been smooth functions in special cases, and they commute classically, but why would I assume suddenly in Quantum theory I can't multiply them as I want, 
   or use them directly as observables? <b>Deformation:</b> This is the prescription which gives an intuitive feel (and makes things mathematically very rigorous - so much so that
-  we haven't worked it out completely for many observables) we say that insted of randomly jumping from poisson bracket, which is nothing like multplying two objects in differeny order.
+  we haven't worked it out completely for many observables). We say that instead of randomly jumping from the Poisson bracket, which is nothing like multiplying two objects in different order.
   We say that add the quantum corrections to the classical solutions Φπ --> Φ⋆π = Φπ + h() + h^2() ... so we are actually defining a new kind of ()⋆() product.  Where the first order in
-  planck's constant correction is defined as the poisson bracket. Now the second quantization is much more digestable.
+  Planck's constant correction is defined as the poisson bracket. Now the second quantization is much more digestible.
 
-  But this hasn't yet solved the problem that poisson bracket was ill defined. Now enters the concept of <b>smearing</b> --> Φ(f) := ∫Φ(x)f(x)dx, which smoothens out rough edges
+  But this hasn't yet solved the problem that Poisson bracket was ill-defined. Now enters the concept of <b>smearing</b> --> Φ(f):= ∫Φ(x)f(x)dx, which smoothens out rough edges
   (i.e tames the singularities) and makes sure the Poisson bracket can be well defined - earlier w/o smearing, we can't even define Φ(x) as an observable on classical phase space - because the vector
-  which generates this observable as a flow doesn't lie in the phase space at all.
-
-  
+  which generates this observable as a flow doesn't lie in the phase space at all. 
 </p>  
+<p> The truly defined quantities even in classical physics are {Φ(f),π(g)} = ∫fgdx and quantizing this makes sense either as a deformation over the usual product(to be more precise) or 
+  perform the naive 2nd quantization (now that we have understood how it is in principle to be implemented - it's no longer that ad-hoc). One crucial remark I would like to make here is that, classically 
+  we can create Poisson brackets of many polynomial or non-linear quantities made from the field observables, such as: Φ^n(f) or Φπ(f), and I can't just keep 2nd quantizing every Poisson bracket I could define.
+  That would have a lot of issues because unless the quantity is a generator of symmetry or something physical, we cannot expect it to be a quantum operator. And, whatever you quantize in that manner should be definable 
+  by using just the quantum operators Φ(f) and π(f). But this is problematic, because Φ is no longer a function - it is a distribution and they cannot be so easily multiplies togther and also we would have ordering ambiguties.
+  So how do we even define- say, polynomial operators (which are extremely important to have a definition of Hamiltonian or to do interacting theory). 
+</p>  
+
+<p>
+  For example, you can multiply δ(x) with δ(y) as long as x≠y. But when the points coincide, in our hands lie a delta^2 which is horribly ill defined.  But for other "better behaving" 
+  distributions we can give a local and covariant definition of operator products by doing something analogous to Analytical continnuation. In QFT and distribution business, this is called a
+  <b>Hadamard Subtraction</b> (which is the "correct" way to do normal ordering). So, Normal ordering is not an ad hoc prescription to somehow subtract out or regulate the vaccum energy, but the VACCUM DOESN'T HAVE AN ENERGY
+  because there is no way to define a Hamiltonian - which is quadratic in the field operator Φ, w/o having to perform Hadamard subtraction.
+</p>  
+  
+<h2>Algebraic QFT axioms</h2>  
+ <p>Coming soon</p> 
 <p>I hope this was insightful to beginners and intermediates alike. If
 you’d like to see more articles like this one in the future, please
 reach out and let me know!</p>
