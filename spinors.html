@@ -11,14 +11,16 @@
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
  <style>
-     mjx-container {
-     line-height: 0 !important;      /* remove extra vertical padding */
-     vertical-align: middle !important;
-   }
-   
-   mjx-container svg {
-     vertical-align: middle !important;
-   }
+    mjx-container {
+  line-height: normal !important;
+  display: inline-block !important;
+  vertical-align: middle !important; /* aligns math with text baseline */
+}
+
+mjx-container svg {
+  display: inline !important;
+  line-height: normal !important;
+}
   </style>
 <head>
   <meta charset="utf-8" />
@@ -55,15 +57,17 @@
 <p>Consider something called a celestial sphere, which contains all the events you can see at one instant of time (in principle - can't do anything if you have myopia, yikes)
 This collection of events (from whom the light ray originated) forms a sphere in the past - this can be understood by the equation for a null ray:</p>
 <p>$t^2$ = constant =  $x^2 + y^2 + z^2$  [This is our good old equation for a sphere]</p>  
-<p>Now that we have a sphere, it's better to use 2 new coordinates instead of restrictions on [x,y,z]; We could choose to use [θ,Φ] coordinates or take inspiration from complex analysis
-and make use of the stereographic coordinates [$\zeta,\bar{\zeta}$]. In the complex coordinates, we will have</p>  
+<p>Now that we have a sphere, it's better to use 2 new coordinates instead of restrictions on [x,y,z]; We could choose to use [θ,Φ] coordinates or
+   take inspiration from complex analysis and make use of the stereographic coordinates [$\zeta,\bar{\zeta}$]. In the complex coordinates, we will have</p>  
 <p> $\zeta = {}^{(x+iy)}\!\!/\!_{(1-z)}$ </p>
 <p> and in the spherical coordinates we have </p>
 <p> x = sin(θ)cos(Φ), y =sin(θ)sin(Φ), z = cos(θ) </p>  
-<p>To understand why one of the representations might be better than the other, let us look at how Lorentz transforms affect these null directions. As we are aware that Lorentz respects the causal relations,
-meaning any Lorentz transformation becomes some transformation (possibly with a new outlook) of the coordinates [z,z̄] or [θ,Φ].(All we care about as of now are the null directions and not the lengths)  </p>  
-<p>Further simplification that we plan on doing is to use $\zeta = {}^{\chi}\!\!/\!_{\eta}$ so that we don't have to deal with $\infty$ for the north pole. By this choice, we've entered the realm of
-   $\mathbb{CP}$ because the coordinates $(\chi,\eta)=(\lambda\chi,\lambda\eta)\forall\lambda$. Now any direction is represented by these 2 complex projective coordinates, and any (complex) linear transformation of these would give us:</p>
+<p>To understand why one of the representations might be better than the other, let us look at how Lorentz transforms affect these null directions.
+   As we are aware that Lorentz respects the causal relations, meaning any Lorentz transformation becomes some transformation (possibly with a new outlook) 
+   of the coordinates [z,z̄] or [θ,Φ].(All we care about as of now are the null directions and not the lengths)  </p>  
+<p>Further simplification that we plan on doing is to use $\zeta = {}^{\chi}\!\!/\!_{\eta}$ so that we don't have to deal with $\infty$ for the north pole.
+   By this choice, we've entered the realm of $\mathbb{CP}$ because the coordinates $(\chi,\eta)=(\lambda\chi,\lambda\eta)\forall\lambda$.
+   Now any direction is represented by these 2 complex projective coordinates, and any (complex) linear transformation of these would give us:</p>
 <p>$(\chi,\eta)\rightarrow(\tilde{\chi},\tilde{\eta})$</p>
 <p>$\zeta\rightarrow\tilde{\zeta} = {}^{(\alpha\chi +\beta\eta)}\!\!/\!_{(\gamma\chi +\delta\eta)}$</p> 
 <p>Now we need to check what these look like in the old coordinates of the minkowski spacetime -> We expect them to still be null directions because they are still points on the celestial sphere.</p>   
