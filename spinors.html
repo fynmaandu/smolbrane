@@ -55,7 +55,7 @@ mjx-container svg {
 
 <p>Let us dive into it from the perspective of a relativist and motivate it instead of defining it outright as a mathematician:</p>
 <p>Consider something called a celestial sphere, which contains all the events you can see at one instant of time (in principle - can't do anything if you have myopia, yikes)
-This collection of events (from whom the light ray originated) forms a sphere in the past - this can be understood by the equation for a null ray:</p>
+This collection of events (from whom the light ray originated) forms a sphere in the past - this can be understood by the norm of null vector:</p>
 <p>$t^2$ = constant =  $x^2 + y^2 + z^2$  [This is our good old equation for a sphere]</p>  
 <p>Now that we have a sphere, it's better to use 2 new coordinates instead of restrictions on [x,y,z]; We could choose to use [θ,Φ] coordinates or
    take inspiration from complex analysis and make use of the stereographic coordinates [$\zeta,\bar{\zeta}$]. In the complex coordinates, we will have</p>  
@@ -70,19 +70,28 @@ This collection of events (from whom the light ray originated) forms a sphere in
    Now any direction is represented by these 2 complex projective coordinates, and any (complex) linear transformation of these would give us:</p>
 <p>$(\chi,\eta)\rightarrow(\chi',\eta')$\\
  $\zeta\rightarrow\zeta' = {}^{(\alpha\chi +\beta\eta)}\!\!/\!_{(\gamma\chi +\delta\eta)}$ given that $\alpha\delta-\beta\gamma = 1$ an extra scale constraint.
- If this is relaxed even then the $GL(2\mathbb{C})$ transformations will blehhh ahhh ? how do we end up at $PGL(2,\mathbb{C}) = SL(2,\mathbb{C})/\{\pm I\}$ </p>
- 
-<p>Now we need to check what these look like in the old coordinates of the minkowski spacetime -> We expect them to still be null directions
-   because they are still points on the celestial sphere. </p>
+ If this is relaxed, even then the $GL(2\mathbb{C})$ transformations will blehhh ahhh ? how do we end up at $PGL(2,\mathbb{C}) = SL(2,\mathbb{C})/\{\pm I\}$ </p>
+<p>Now we need to check what these look like in the old coordinates of the Minkowski spacetime -> We expect them to remain null directions because they are still points on the celestial sphere. </p>
 <p>
    x = ?
 </p>   
+<pre>
+   Some Questions to ask before we go into the mathematical study of this construction:
+   (1) Do we ever only study the null directions in this so-called "spinor" object?
+   (2) Why does this simplify the calculations in some cases? Is there any core mathematical advantage?
+   (3) In the end, it looks like just new coordinates to work with in a projective sense;
+       So can it be constructed w/o doing all of this celestial sphere business?
+       Then somehow timelike/spacelike vectors should also make sense.
+</pre>   
  <h2 class="part2">Complete Mathematical Picture</h2>  
  <p>We define something called a "spinor space" using a complex 2-d vector space $\mathbb{S}$ endowed with a fixed alternating tensor $\epsilon_{AB}$.
- This spinor space is connected to the lorentz vector space and it also gives the lorentzian metric of the spacetime using something called "principal null vectors"(will make it precise later)
- Spinor fields have an almost one to one relation to tensor fields, any tensorial quantity that we wrote in GR before can be now written in terms of multiple spinor fields. 
- But with a small caveat that not all spacetimes admit a spinor field - for that we need to check something called "Čech cohomology" of the manifold which allows us to stitch
- together the $\epsilon_{AB}$ and the spinor field $\mathbb{S}$ constructed on individual charts. (basically a sheaf theory mechanism)</p>  
+ This spinor space is connected to the Lorentz vector space, and it also gives the Lorentzian metric of the spacetime using something called "principal null vectors"(will make it precise later)
+ Spinor fields have an almost one-to-one relation to tensor fields; any tensorial quantity that we wrote in GR before can now be written in terms of multiple spinor fields. 
+ But with a small caveat that not all spacetimes admit a spinor field - for that, we need to check something called "Čech cohomology" of the manifold, which allows us to stitch
+ together the $\epsilon_{AB}$ and the spinor field $\mathbb{S}$, which can be constructed on individual charts. (basically a sheaf theory mechanism).
+ <ul>I'd like to add a remark that not all spinorial descriptions can be translated into tensors; for example, the description of a spin 1/2 field 
+    or Witten's proof of the positive energy theorem.</ul> So one may ask why there is a lack of a proper one-to-one map between these geometric languages?</p>  
+<p></p>   
 <p>Until next time.</p>
 </body>
 </html>
